@@ -36,6 +36,7 @@ import com.sk89q.worldedit.world.World;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldedit.world.gamemode.GameMode;
 
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -177,5 +178,10 @@ class PlayerProxy extends AbstractPlayerActor {
     @Override
     public <B extends BlockStateHolder<B>> void sendFakeBlock(BlockVector3 pos, B block) {
         basePlayer.sendFakeBlock(pos, block);
+    }
+
+    @Override
+    public Locale getLocale() {
+        return basePlayer.getLocale();
     }
 }

@@ -24,8 +24,10 @@ import com.sk89q.worldedit.session.SessionOwner;
 import com.sk89q.worldedit.util.Identifiable;
 import com.sk89q.worldedit.util.auth.Subject;
 import com.sk89q.worldedit.util.formatting.text.Component;
+import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 
 import java.io.File;
+import java.util.Locale;
 
 /**
  * An object that can perform actions in WorldEdit.
@@ -77,6 +79,15 @@ public interface Actor extends Identifiable, SessionOwner, Subject {
     void printError(String msg);
 
     /**
+     * Print a WorldEdit message.
+     *
+     * @param component The component to print
+     */
+    default void printInfo(Component component) {
+        print(component.color(TextColor.LIGHT_PURPLE));
+    }
+
+    /**
      * Print a {@link Component}.
      *
      * @param component The component to print
@@ -120,4 +131,10 @@ public interface Actor extends Identifiable, SessionOwner, Subject {
      */
     void dispatchCUIEvent(CUIEvent event);
 
+    /**
+     * Get the locale of this actor.
+     *
+     * @return The locale
+     */
+    Locale getLocale();
 }

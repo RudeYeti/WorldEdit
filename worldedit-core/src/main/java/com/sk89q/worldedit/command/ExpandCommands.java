@@ -146,7 +146,7 @@ public class ExpandCommands {
 
         session.getRegionSelector(player.getWorld()).explainRegionAdjust(player, session);
 
-        player.print("Region expanded " + (newSize - oldSize) + " block(s).");
+        player.printInfo(TranslatableComponent.of("worldedit.region.expanded", TextComponent.of(newSize - oldSize)));
     }
 
 }

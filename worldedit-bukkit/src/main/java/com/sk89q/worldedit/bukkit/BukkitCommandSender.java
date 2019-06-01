@@ -32,6 +32,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -134,6 +135,11 @@ public class BukkitCommandSender implements Actor {
 
     @Override
     public void dispatchCUIEvent(CUIEvent event) {
+    }
+
+    @Override
+    public Locale getLocale() {
+        return Locale.US;
     }
 
     @Override

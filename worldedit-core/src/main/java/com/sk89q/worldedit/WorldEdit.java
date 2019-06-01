@@ -54,6 +54,7 @@ import com.sk89q.worldedit.util.io.file.FilenameResolutionException;
 import com.sk89q.worldedit.util.io.file.InvalidFilenameException;
 import com.sk89q.worldedit.util.task.SimpleSupervisor;
 import com.sk89q.worldedit.util.task.Supervisor;
+import com.sk89q.worldedit.util.translation.TranslationManager;
 import com.sk89q.worldedit.world.block.BlockStateHolder;
 import com.sk89q.worldedit.world.block.BlockType;
 import com.sk89q.worldedit.world.registry.BundledBlockData;
@@ -107,6 +108,7 @@ public final class WorldEdit {
     private final SessionManager sessions = new SessionManager(this);
     private final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(EvenMoreExecutors.newBoundedCachedThreadPool(0, 1, 20));;
     private final Supervisor supervisor = new SimpleSupervisor();
+    private final TranslationManager translationManager = new TranslationManager();
 
     private final BlockFactory blockFactory = new BlockFactory(this);
     private final ItemFactory itemFactory = new ItemFactory(this);
@@ -220,6 +222,15 @@ public final class WorldEdit {
      */
     public SessionManager getSessionManager() {
         return sessions;
+    }
+
+    /**
+     * Return the translation manager.
+     *
+     * @return the translation manager
+     */
+    public TranslationManager getTranslationManager() {
+        return translationManager;
     }
 
     /**

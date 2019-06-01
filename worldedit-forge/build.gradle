@@ -57,6 +57,7 @@ minecraft {
         }
     }
 
+    accessTransformer = file('accesstransformer.cfg')
 }
 
 project.archivesBaseName = "${project.archivesBaseName}-mc${minecraftVersion}"

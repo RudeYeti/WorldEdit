@@ -112,7 +112,7 @@ public class UtilityCommands {
         desc = "Fill a hole recursively"
     )
     @CommandPermissions("worldedit.fill.recursive")
-    @Logging(PLACEMENT)
+    @Logging(PLACEMENT)bu
     public int fillr(Player player, LocalSession session, EditSession editSession,
                      @Arg(desc = "The blocks to fill with")
                          Pattern pattern,

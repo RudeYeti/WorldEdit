@@ -49,6 +49,7 @@ import org.spongepowered.api.text.serializer.TextSerializers;
 import org.spongepowered.api.world.World;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -217,6 +218,11 @@ public class SpongePlayer extends AbstractPlayerActor {
 //                }
 //            }
         }
+    }
+
+    @Override
+    public Locale getLocale() {
+        return player.getLocale();
     }
 
     @Override

@@ -54,6 +54,7 @@ import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -187,6 +188,12 @@ public class ForgePlayer extends AbstractPlayerActor {
     @Override
     public <T> T getFacet(Class<? extends T> cls) {
         return null;
+    }
+
+    @Override
+    public Locale getLocale() {
+        return Locale.US; // TODO Fix once AT works
+//        return Locale.forLanguageTag(player.language.replace('_', '-'));
     }
 
     @Override

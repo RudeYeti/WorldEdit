@@ -36,6 +36,7 @@ import org.spongepowered.api.text.format.TextColors;
 import org.spongepowered.api.text.serializer.TextSerializers;
 
 import java.io.File;
+import java.util.Locale;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -138,6 +139,11 @@ public class SpongeCommandSender implements Actor {
 
     @Override
     public void dispatchCUIEvent(CUIEvent event) {
+    }
+
+    @Override
+    public Locale getLocale() {
+        return Locale.US;
     }
 
     @Override
