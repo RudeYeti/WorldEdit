@@ -1,5 +1,6 @@
 plugins {
     id("net.ltgt.apt") version "0.21"
+    id "com.mendhak.gradlecrowdin" version "0.1.0"
 }
 
 apply plugin: 'java-library'
@@ -49,4 +50,25 @@ sourceSets {
             srcDir 'src/main/resources'
         }
     }
+}
+
+if (project.hasProperty("crowdin_apikey")) {
+    build.dependsOn(crowdinUpload)
+    build.dependsOn(crowdinDownload)
+} else {
+    ext.crowdin_apikey = ""
+}
+
+crowdinUpload {
+    apiKey = "${crowdin_apikey}"
+    projectId = 'worldedit-core'
+    files = [
+            [ name: 'strings.json', source: "$projectDir/worldedit-core/src/main/resources/lang/strings.json" ]
+    ]
+}
+
+crowdinDownload {
+    apiKey = "${crowdin_apikey}"
+    destination = "$projectDir/worldedit-core/src/main/resources/lang"
+    projectId = 'worldedit-core'
 }

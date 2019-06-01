@@ -19,38 +19,109 @@
 
 package com.sk89q.worldedit.util.translation;
 
+import com.google.common.io.Files;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.util.formatting.text.Component;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.renderer.FriendlyComponentRenderer;
+import com.sk89q.worldedit.util.io.ResourceLoader;
 
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.net.URL;
+import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 public class TranslationManager {
 
+    private static final Gson gson = new GsonBuilder().create();
+    private static final Type STRING_MAP_TYPE = new TypeToken<Map<String, String>>() {}.getType();
+
     private final Map<Locale, Map<String, String>> translationMap = new HashMap<>();
     private final FriendlyComponentRenderer<Locale> friendlyComponentRenderer = FriendlyComponentRenderer.from(
             (locale, key) -> new MessageFormat(getTranslationMap(locale).getOrDefault(key, key), locale));
-    private Locale defaultLocale = Locale.US;
+    private Locale defaultLocale = Locale.ENGLISH;
 
-    public TranslationManager() {
-        // Temporary store until we have file loads
-        Map<String, String> us = new HashMap<>();
-        us.put("worldedit.region.expanded", "Region expanded {0} block(s)");
-        translationMap.put(Locale.US, us);
+    private final WorldEdit worldEdit;
+
+    private final Set<Locale> checkedLocales = new HashSet<>();
+
+    public TranslationManager(WorldEdit worldEdit) {
+        this.worldEdit = worldEdit;
     }
 
     public void setDefaultLocale(Locale defaultLocale) {
         this.defaultLocale = defaultLocale;
     }
 
+    private Map<String, String> parseTranslationFile(File file) throws IOException {
+        return gson.fromJson(Files.toString(file, Charset.defaultCharset()), STRING_MAP_TYPE);
+    }
+
+    private Map<String, String> parseTranslationFile(URL file) throws IOException {
+        return gson.fromJson(Resources.toString(file, Charset.defaultCharset()), STRING_MAP_TYPE);
+    }
+
+    private Optional<Map<String, String>> loadTranslationFile(String filename) {
+        File localFile = worldEdit.getWorkingDirectoryFile("lang/" + filename);
+        if (localFile.exists()) {
+            try {
+                return Optional.of(parseTranslationFile(localFile));
+            } catch (IOException e) {
+                return Optional.empty();
+            }
+        } else {
+            try {
+                return Optional.of(parseTranslationFile(ResourceLoader.getResourceRoot("lang/" + filename)));
+            } catch (IOException e) {
+                return Optional.empty();
+            }
+        }
+    }
+
+    private boolean tryLoadTranslations(Locale locale) {
+        if (checkedLocales.contains(locale)) {
+            return false;
+        }
+        checkedLocales.add(locale);
+        Optional<Map<String, String>> langData = loadTranslationFile(locale.getLanguage() + "-" + locale.getCountry() + "/strings.json");
+        if (!langData.isPresent()) {
+            langData = loadTranslationFile(locale.getLanguage() + "/strings.json");
+        }
+        if (langData.isPresent()) {
+            translationMap.put(locale, langData.get());
+            return true;
+        }
+        if (locale.equals(defaultLocale)) {
+            translationMap.put(Locale.ENGLISH, loadTranslationFile("strings.json").orElseThrow(
+                    () -> new RuntimeException("Failed to load WorldEdit strings!")
+            ));
+            return true;
+        }
+        return false;
+    }
+
     private Map<String, String> getTranslationMap(Locale locale) {
         Map<String, String> translations = translationMap.get(locale);
         if (translations == null) {
-            translations = translationMap.get(defaultLocale);
+            if (tryLoadTranslations(locale)) {
+                return getTranslationMap(locale);
+            }
+            if (!locale.equals(defaultLocale)) {
+                translations = getTranslationMap(defaultLocale);
+            }
         }
 
         return translations;

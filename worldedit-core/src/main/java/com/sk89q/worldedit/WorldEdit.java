@@ -108,7 +108,7 @@ public final class WorldEdit {
     private final SessionManager sessions = new SessionManager(this);
     private final ListeningExecutorService executorService = MoreExecutors.listeningDecorator(EvenMoreExecutors.newBoundedCachedThreadPool(0, 1, 20));;
     private final Supervisor supervisor = new SimpleSupervisor();
-    private final TranslationManager translationManager = new TranslationManager();
+    private final TranslationManager translationManager = new TranslationManager(this);
 
     private final BlockFactory blockFactory = new BlockFactory(this);
     private final ItemFactory itemFactory = new ItemFactory(this);
