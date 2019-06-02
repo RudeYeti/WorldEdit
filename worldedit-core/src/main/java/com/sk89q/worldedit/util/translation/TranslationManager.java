@@ -26,7 +26,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.util.formatting.text.Component;
-import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.formatting.text.renderer.FriendlyComponentRenderer;
 import com.sk89q.worldedit.util.io.ResourceLoader;
 
@@ -42,7 +41,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 public class TranslationManager {
 
@@ -127,18 +125,7 @@ public class TranslationManager {
         return translations;
     }
 
-    private Component convertComponent(TranslatableComponent component, Locale locale) {
-        return friendlyComponentRenderer.render(component, locale);
-    }
-
     public Component convertText(Component component, Locale locale) {
-        if (component instanceof TranslatableComponent) {
-            return convertComponent((TranslatableComponent) component, locale);
-        } else {
-            if (component.children().isEmpty()) {
-                return component;
-            }
-            return component.children(component.children().stream().map(comp -> convertText(comp, locale)).collect(Collectors.toList()));
-        }
+        return friendlyComponentRenderer.render(component, locale);
     }
 }
