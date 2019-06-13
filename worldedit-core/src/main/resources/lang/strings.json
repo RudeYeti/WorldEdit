@@ -1,3 +1,7 @@
 {
-    "worldedit.region.expanded": "Region expanded {0} block(s)"
+    "worldedit.commands.expand.vert.description": "Vertically expand the selection to world limits.",
+    "worldedit.region.expanded.singular": "Region expanded {0} block",
+    "worldedit.region.expanded.plural": "Region expanded {0} blocks",
+    "worldedit.region.expanded.vert.singular": "Region expanded {0} block [top-to-bottom].",
+    "worldedit.region.expanded.vert.plural": "Region expanded {0} blocks [top-to-bottom]."
 }

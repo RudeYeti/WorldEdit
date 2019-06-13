@@ -46,6 +46,7 @@ import java.util.List;
 
 import static com.sk89q.worldedit.command.util.Logging.LogMode.REGION;
 import static com.sk89q.worldedit.internal.command.CommandUtil.requireIV;
+import static com.sk89q.worldedit.util.translation.LocalisationHelpers.pluraliseI18n;
 
 /**
  * Extracted from {@link SelectionCommands} to allow importing of {@link Command}.
@@ -87,7 +88,7 @@ public class ExpandCommands {
 
     private static Command createVertCommand(CommandManager commandManager) {
         return commandManager.newCommand("vert")
-            .description(TextComponent.of("Vertically expand the selection to world limits."))
+            .description(TranslatableComponent.of("worldedit.commands.expand.vert.description"))
             .action(parameters -> {
                 expandVert(
                     requireIV(Key.of(LocalSession.class), "localSession", parameters),
@@ -108,8 +109,10 @@ public class ExpandCommands {
             session.getRegionSelector(player.getWorld()).learnChanges();
             int newSize = region.getArea();
             session.getRegionSelector(player.getWorld()).explainRegionAdjust(player, session);
-            player.print("Region expanded " + (newSize - oldSize)
-                + " blocks [top-to-bottom].");
+            int changeSize = newSize - oldSize;
+            player.printInfo(
+                    TranslatableComponent.of(pluraliseI18n("worldedit.region.expanded.vert", changeSize), TextComponent.of(changeSize))
+            );
         } catch (RegionOperationException e) {
             player.printError(e.getMessage());
         }
@@ -146,7 +149,8 @@ public class ExpandCommands {
 
         session.getRegionSelector(player.getWorld()).explainRegionAdjust(player, session);
 
-        player.printInfo(TranslatableComponent.of("worldedit.region.expanded", TextComponent.of(newSize - oldSize)));
+        int changeSize = newSize - oldSize;
+        player.printInfo(TranslatableComponent.of(pluraliseI18n("worldedit.region.expanded", changeSize), TextComponent.of(changeSize)));
     }
 
 }

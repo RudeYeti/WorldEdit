@@ -63,12 +63,12 @@ crowdinUpload {
     apiKey = "${crowdin_apikey}"
     projectId = 'worldedit-core'
     files = [
-            [ name: 'strings.json', source: "$projectDir/worldedit-core/src/main/resources/lang/strings.json" ]
+            [ name: 'strings.json', source: "$projectDir/src/main/resources/lang/strings.json" ]
     ]
 }
 
 crowdinDownload {
     apiKey = "${crowdin_apikey}"
-    destination = "$projectDir/worldedit-core/src/main/resources/lang"
+    destination = "$projectDir/src/main/resources/lang"
     projectId = 'worldedit-core'
 }
