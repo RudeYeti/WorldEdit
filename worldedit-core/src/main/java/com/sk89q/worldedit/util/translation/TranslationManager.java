@@ -42,6 +42,18 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * Handles translations for the plugin.
+ *
+ * These should be in the following format:
+ * plugin.component.message[.meta]*
+ *
+ * Where,
+ * plugin = worldedit
+ * component = The part of the plugin, eg expand
+ * message = A descriptor for which message, eg, expanded
+ * meta = Any extra information such as plural/singular (Can have none to infinite)
+ */
 public class TranslationManager {
 
     private static final Gson gson = new GsonBuilder().create();

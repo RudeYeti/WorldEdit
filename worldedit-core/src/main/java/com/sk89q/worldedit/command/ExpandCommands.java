@@ -88,7 +88,7 @@ public class ExpandCommands {
 
     private static Command createVertCommand(CommandManager commandManager) {
         return commandManager.newCommand("vert")
-            .description(TranslatableComponent.of("worldedit.commands.expand.vert.description"))
+            .description(TranslatableComponent.of("worldedit.expand.description.vert"))
             .action(parameters -> {
                 expandVert(
                     requireIV(Key.of(LocalSession.class), "localSession", parameters),
@@ -111,7 +111,7 @@ public class ExpandCommands {
             session.getRegionSelector(player.getWorld()).explainRegionAdjust(player, session);
             int changeSize = newSize - oldSize;
             player.printInfo(
-                    TranslatableComponent.of(pluraliseI18n("worldedit.region.expanded.vert", changeSize), TextComponent.of(changeSize))
+                    TranslatableComponent.of(pluraliseI18n("worldedit.expand.expanded.vert", changeSize), TextComponent.of(changeSize))
             );
         } catch (RegionOperationException e) {
             player.printError(e.getMessage());
@@ -150,7 +150,7 @@ public class ExpandCommands {
         session.getRegionSelector(player.getWorld()).explainRegionAdjust(player, session);
 
         int changeSize = newSize - oldSize;
-        player.printInfo(TranslatableComponent.of(pluraliseI18n("worldedit.region.expanded", changeSize), TextComponent.of(changeSize)));
+        player.printInfo(TranslatableComponent.of(pluraliseI18n("worldedit.expand.expanded", changeSize), TextComponent.of(changeSize)));
     }
 
 }
