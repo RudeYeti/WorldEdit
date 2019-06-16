@@ -17,26 +17,33 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package com.sk89q.worldedit.util.translation;
+package com.sk89q.worldedit.util.formatting.component;
 
-public class LocalisationHelpers {
+import com.sk89q.worldedit.util.formatting.text.Component;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
 
-    private LocalisationHelpers() {
+import java.util.List;
+
+public class TextUtils {
+
+    private TextUtils() {
     }
 
     /**
-     * Turn a translation key into a ".singular" or ".plural"
-     * depending on what the given number is.
+     * Join an array of components with a joiner component.
      *
-     * @param translationKey The base translation key
-     * @param number The number
-     * @return The key with .plural or .singular appended
+     * @param components The components to join
+     * @param joiner The joiner component
+     * @return The joined component
      */
-    public static String pluraliseI18n(String translationKey, float number) {
-        if (number == 1) {
-            return translationKey + ".singular";
-        } else {
-            return translationKey + ".plural";
+    public static Component join(List<Component> components, Component joiner) {
+        TextComponent.Builder builder = TextComponent.builder();
+        for (int i = 0; i < components.size(); i++) {
+            builder.append(components.get(i));
+            if (i < components.size() - 1) {
+                builder.append(joiner);
+            }
         }
+        return builder.build();
     }
 }

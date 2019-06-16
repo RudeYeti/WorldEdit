@@ -79,6 +79,15 @@ public interface Actor extends Identifiable, SessionOwner, Subject {
     void printError(String msg);
 
     /**
+     * Print a WorldEdit error.
+     *
+     * @param component The component to print
+     */
+    default void printError(Component component) {
+        print(component.color(TextColor.RED));
+    }
+
+    /**
      * Print a WorldEdit message.
      *
      * @param component The component to print

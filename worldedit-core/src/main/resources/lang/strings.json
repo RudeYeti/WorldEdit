@@ -3,5 +3,17 @@
     "worldedit.expand.expanded.singular": "Region expanded {0} block",
     "worldedit.expand.expanded.plural": "Region expanded {0} blocks",
     "worldedit.expand.expanded.vert.singular": "Region expanded {0} block [top-to-bottom].",
-    "worldedit.expand.expanded.vert.plural": "Region expanded {0} blocks [top-to-bottom]."
+    "worldedit.expand.expanded.vert.plural": "Region expanded {0} blocks [top-to-bottom].",
+
+    "worldedit.biomeinfo.lineofsight.singular": "Biome at line of sight point: {0}",
+    "worldedit.biomeinfo.lineofsight.plural": "Biomes at line of sight point: {0}",
+    "worldedit.biomeinfo.position.singular": "Biome at your position: {0}",
+    "worldedit.biomeinfo.position.plural": "Biomes at your position: {0}",
+    "worldedit.biomeinfo.selection.singular": "Biome in your selection: {0}",
+    "worldedit.biomeinfo.selection.plural": "Biomes in your selection: {0}",
+
+    "worldedit.setbiome.changed.singular": "Biomes were changed in {0} columns. You may have to rejoin your game (or close and reopen your world) to see a change.",
+    "worldedit.setbiome.changed.plural": "Biomes were changed in {0} columns. You may have to rejoin your game (or close and reopen your world) to see a change.",
+
+    "worldedit.raytrace.noblock": "No block in sight!"
 }
