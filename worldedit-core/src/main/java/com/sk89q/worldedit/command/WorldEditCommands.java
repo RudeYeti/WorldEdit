@@ -32,6 +32,8 @@ import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extension.platform.Capability;
 import com.sk89q.worldedit.extension.platform.Platform;
 import com.sk89q.worldedit.extension.platform.PlatformManager;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.util.paste.ActorCallbackPaste;
 import com.sk89q.worldedit.util.report.ConfigReport;
 import com.sk89q.worldedit.util.report.ReportList;
@@ -44,14 +46,13 @@ import org.enginehub.piston.annotation.param.Switch;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.time.zone.ZoneRulesException;
 import java.util.List;
-import java.util.Locale;
 
 @CommandContainer(superTypes = CommandPermissionsConditionGenerator.Registration.class)
 public class WorldEditCommands {
@@ -69,7 +70,7 @@ public class WorldEditCommands {
         desc = "Get WorldEdit version"
     )
     public void version(Actor actor) {
-        actor.print("WorldEdit version " + WorldEdit.getVersion());
+        actor.printInfo(TranslatableComponent.of("worldedit.version.version", TextComponent.of(WorldEdit.getVersion())));
         actor.print("https://github.com/EngineHub/worldedit/");
 
         PlatformManager pm = we.getPlatformManager();
@@ -94,7 +95,7 @@ public class WorldEditCommands {
     public void reload(Actor actor) {
         we.getPlatformManager().queryCapability(Capability.CONFIGURATION).reload();
         we.getEventBus().post(new ConfigurationLoadEvent(we.getPlatformManager().queryCapability(Capability.CONFIGURATION).getConfiguration()));
-        actor.print("Configuration reloaded!");
+        actor.printInfo(TranslatableComponent.of("worldedit.reload.config"));
     }
 
     @Command(
@@ -112,10 +113,10 @@ public class WorldEditCommands {
 
         try {
             File dest = new File(we.getConfiguration().getWorkingDirectory(), "report.txt");
-            Files.write(result, dest, Charset.forName("UTF-8"));
-            actor.print("WorldEdit report written to " + dest.getAbsolutePath());
+            Files.write(result, dest, StandardCharsets.UTF_8);
+            actor.printInfo(TranslatableComponent.of("worldedit.report.written", TextComponent.of(dest.getAbsolutePath())));
         } catch (IOException e) {
-            actor.printError("Failed to write report: " + e.getMessage());
+            actor.printError(TranslatableComponent.of("worldedit.report.error", TextComponent.of(e.getMessage())));
         }
 
         if (pastebin) {
@@ -143,12 +144,13 @@ public class WorldEditCommands {
         try {
             ZoneId tz = ZoneId.of(timezone);
             session.setTimezone(tz);
-            player.print("Timezone set for this session to: " + tz.getDisplayName(
-                    TextStyle.FULL, Locale.ENGLISH
-            ));
-            player.print("The current time in that timezone is: " + dateFormat.format(ZonedDateTime.now(tz)));
+            player.printInfo(TranslatableComponent.of("worldedit.timezone.set", TextComponent.of(tz.getDisplayName(
+                    TextStyle.FULL, player.getLocale()
+            ))));
+            player.print(TranslatableComponent.of("worldedit.timezone.current",
+                    TextComponent.of(dateFormat.withLocale(player.getLocale()).format(ZonedDateTime.now(tz)))));
         } catch (ZoneRulesException e) {
-            player.printError("Invalid timezone");
+            player.printError(TranslatableComponent.of("worldedit.timezone.invalid"));
         }
     }
 
