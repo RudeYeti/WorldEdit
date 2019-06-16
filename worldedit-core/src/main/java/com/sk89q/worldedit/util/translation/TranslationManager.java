@@ -34,6 +34,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -77,11 +78,11 @@ public class TranslationManager {
     }
 
     private Map<String, String> parseTranslationFile(File file) throws IOException {
-        return gson.fromJson(Files.toString(file, Charset.defaultCharset()), STRING_MAP_TYPE);
+        return gson.fromJson(Files.toString(file, StandardCharsets.UTF_8), STRING_MAP_TYPE);
     }
 
     private Map<String, String> parseTranslationFile(URL file) throws IOException {
-        return gson.fromJson(Resources.toString(file, Charset.defaultCharset()), STRING_MAP_TYPE);
+        return gson.fromJson(Resources.toString(file, StandardCharsets.UTF_8), STRING_MAP_TYPE);
     }
 
     private Optional<Map<String, String>> loadTranslationFile(String filename) {
