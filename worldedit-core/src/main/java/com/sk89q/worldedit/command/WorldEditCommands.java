@@ -32,8 +32,12 @@ import com.sk89q.worldedit.extension.platform.Actor;
 import com.sk89q.worldedit.extension.platform.Capability;
 import com.sk89q.worldedit.extension.platform.Platform;
 import com.sk89q.worldedit.extension.platform.PlatformManager;
+import com.sk89q.worldedit.util.formatting.component.MessageBox;
+import com.sk89q.worldedit.util.formatting.component.TextComponentProducer;
 import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
+import com.sk89q.worldedit.util.formatting.text.event.HoverEvent;
+import com.sk89q.worldedit.util.formatting.text.format.TextColor;
 import com.sk89q.worldedit.util.paste.ActorCallbackPaste;
 import com.sk89q.worldedit.util.report.ConfigReport;
 import com.sk89q.worldedit.util.report.ReportList;
@@ -71,20 +75,30 @@ public class WorldEditCommands {
     )
     public void version(Actor actor) {
         actor.printInfo(TranslatableComponent.of("worldedit.version.version", TextComponent.of(WorldEdit.getVersion())));
-        actor.print("https://github.com/EngineHub/worldedit/");
+        actor.printInfo(TextComponent.of("https://github.com/EngineHub/worldedit/"));
 
         PlatformManager pm = we.getPlatformManager();
 
-        actor.printDebug("----------- Platforms -----------");
+        TextComponentProducer producer = new TextComponentProducer();
         for (Platform platform : pm.getPlatforms()) {
-            actor.printDebug(String.format("* %s (%s)", platform.getPlatformName(), platform.getPlatformVersion()));
+            producer.append(
+                    TextComponent.of("* ", TextColor.GRAY)
+                    .append(TextComponent.of(platform.getPlatformName()))
+                    .append(TextComponent.of("(" + platform.getPlatformVersion() + ")"))
+            ).newline();
         }
+        actor.print(new MessageBox("Platforms", producer, TextColor.GRAY).create());
 
-        actor.printDebug("----------- Capabilities -----------");
+        producer.reset();
         for (Capability capability : Capability.values()) {
             Platform platform = pm.queryCapability(capability);
-            actor.printDebug(String.format("%s: %s", capability.name(), platform != null ? platform.getPlatformName() : "NONE"));
+            producer.append(
+                    TextComponent.of(capability.name(), TextColor.GRAY)
+                    .append(TextComponent.of(": ")
+                    .append(TextComponent.of(platform != null ? platform.getPlatformName() : "NONE")))
+            ).newline();
         }
+        actor.print(new MessageBox("Capabilities", producer, TextColor.GRAY).create());
     }
 
     @Command(
