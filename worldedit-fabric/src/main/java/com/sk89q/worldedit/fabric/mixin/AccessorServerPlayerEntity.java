@@ -19,28 +19,13 @@
 
 package com.sk89q.worldedit.fabric.mixin;
 
-import com.mojang.authlib.GameProfile;
-import com.sk89q.worldedit.fabric.FabricWorldEdit;
-import net.minecraft.container.ContainerListener;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.gen.Accessor;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(ServerPlayerEntity.class)
-public abstract class MixinServerPlayerEntity extends PlayerEntity implements ContainerListener {
+public interface AccessorServerPlayerEntity {
 
-    public MixinServerPlayerEntity(World world, GameProfile gameProfile) {
-        super(world, gameProfile);
-    }
-
-    @Inject(method = "swingHand", at = @At(value = "HEAD"))
-    public void onSwing(Hand hand, CallbackInfo injectionInfo) {
-        FabricWorldEdit.inst.onLeftClickAir(this, this.world, hand);
-    }
+    @Accessor(value = "clientLanguage")
+    String getClientLanguage();
 }

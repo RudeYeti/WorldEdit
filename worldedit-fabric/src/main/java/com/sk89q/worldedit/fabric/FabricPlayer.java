@@ -25,6 +25,7 @@ import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.extension.platform.AbstractPlayerActor;
 import com.sk89q.worldedit.extent.inventory.BlockBag;
+import com.sk89q.worldedit.fabric.mixin.AccessorServerPlayerEntity;
 import com.sk89q.worldedit.fabric.net.handler.WECUIPacketHandler;
 import com.sk89q.worldedit.internal.cui.CUIEvent;
 import com.sk89q.worldedit.math.BlockVector3;
@@ -55,6 +56,7 @@ import net.minecraft.util.math.BlockPos;
 
 import javax.annotation.Nullable;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.UUID;
 
 public class FabricPlayer extends AbstractPlayerActor {
@@ -125,6 +127,11 @@ public class FabricPlayer extends AbstractPlayerActor {
         PacketByteBuf buffer = new PacketByteBuf(Unpooled.copiedBuffer(send.getBytes(WECUIPacketHandler.UTF_8_CHARSET)));
         CustomPayloadS2CPacket packet = new CustomPayloadS2CPacket(new Identifier(FabricWorldEdit.MOD_ID, FabricWorldEdit.CUI_PLUGIN_CHANNEL), buffer);
         this.player.networkHandler.sendPacket(packet);
+    }
+
+    @Override
+    public Locale getLocale() {
+        return Locale.forLanguageTag(((AccessorServerPlayerEntity) player).getClientLanguage().replace('_', '-'));
     }
 
     @Override

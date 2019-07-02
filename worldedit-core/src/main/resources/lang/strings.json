@@ -16,6 +16,7 @@
     "worldedit.brush.apply.radius": "The size of the brush",
     "worldedit.brush.apply.shape": "The shape of the region",
     "worldedit.brush.apply.type": "Type of brush to use",
+    "worldedit.brush.apply.item.warning": "This brush simulates item usages. Its effects may not work on all platforms, may not be undo-able, and may cause strange interactions with other mods/plugins. Use at your own risk.",
 
     "worldedit.setbiome.changed.singular": "Biomes were changed in {0} column. You may have to rejoin your game (or close and reopen your world) to see a change.",
     "worldedit.setbiome.changed.plural": "Biomes were changed in {0} columns. You may have to rejoin your game (or close and reopen your world) to see a change.",
@@ -82,5 +83,15 @@
     "worldedit.timezone.invalid": "Invalid timezone",
     "worldedit.timezone.set": "Timezone set for this session to: {0}",
     "worldedit.timezone.current": "The current time in that timezone is: {0}",
-    "worldedit.version.version": "WorldEdit version {0}"
+    "worldedit.version.version": "WorldEdit version {0}",
+
+    "worldedit.operation.affected.biome.singular": "{0} biome affected",
+    "worldedit.operation.affected.biome.plural": "{0} biomes affected",
+    "worldedit.operation.affected.block.singular": "{0} block affected",
+    "worldedit.operation.affected.block.plural": "{0} blocks affected",
+    "worldedit.operation.affected.column.singular": "{0} column affected",
+    "worldedit.operation.affected.column.plural": "{0} columns affected",
+    "worldedit.operation.affected.entity.singular": "{0} entity affected",
+    "worldedit.operation.affected.entity.plural": "{0} entities affected",
+    "worldedit.operation.deform.expression": "deformed using {0}"
 }

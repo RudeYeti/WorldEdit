@@ -85,9 +85,7 @@ public class ClipboardCommands {
         Operations.completeLegacy(copy);
         session.setClipboard(new ClipboardHolder(clipboard));
 
-        List<String> messages = Lists.newArrayList();
-        copy.addStatusMessages(messages);
-        messages.forEach(player::print);
+        copy.getStatusMessages().forEach(player::print);
     }
 
     @Command(
@@ -120,9 +118,7 @@ public class ClipboardCommands {
         Operations.completeLegacy(copy);
         session.setClipboard(new ClipboardHolder(clipboard));
 
-        List<String> messages = Lists.newArrayList();
-        copy.addStatusMessages(messages);
-        messages.forEach(player::print);
+        copy.getStatusMessages().forEach(player::print);
     }
 
     @Command(
@@ -171,9 +167,7 @@ public class ClipboardCommands {
         }
 
         player.print("The clipboard has been pasted at " + to);
-        List<String> messages = Lists.newArrayList();
-        operation.addStatusMessages(messages);
-        messages.forEach(player::print);
+        operation.getStatusMessages().forEach(player::print);
     }
 
     @Command(

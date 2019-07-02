@@ -112,10 +112,6 @@ public class ChunkBatchingExtent extends AbstractDelegateExtent {
             @Override
             public void cancel() {
             }
-
-            @Override
-            public void addStatusMessages(List<String> messages) {
-            }
         };
     }
 
