@@ -48,6 +48,7 @@ import com.sk89q.worldedit.util.Direction;
 import com.sk89q.worldedit.util.Location;
 import com.sk89q.worldedit.util.concurrency.EvenMoreExecutors;
 import com.sk89q.worldedit.util.eventbus.EventBus;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
 import com.sk89q.worldedit.util.io.file.FileSelectionAbortedException;
 import com.sk89q.worldedit.util.io.file.FilenameException;
 import com.sk89q.worldedit.util.io.file.FilenameResolutionException;
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
+
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -694,13 +696,13 @@ public final class WorldEdit {
             engine.evaluate(script, filename, vars);
         } catch (ScriptException e) {
             player.printError("Failed to execute:");
-            player.printRaw(e.getMessage());
+            player.print(TextComponent.of(e.getMessage()));
             logger.warn("Failed to execute script", e);
         } catch (NumberFormatException | WorldEditException e) {
             throw e;
         } catch (Throwable e) {
             player.printError("Failed to execute (see console):");
-            player.printRaw(e.getClass().getCanonicalName());
+            player.print(TextComponent.of(e.getClass().getCanonicalName()));
             logger.warn("Failed to execute script", e);
         } finally {
             for (EditSession editSession : scriptContext.getEditSessions()) {

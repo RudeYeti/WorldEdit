@@ -347,14 +347,10 @@ public class ForwardExtentCopy implements Operation {
         List<Component> messages = new ArrayList<>();
         messages.add(TranslatableComponent.of(pluraliseI18n("worldedit.operation.affected.block", affectedBlocks),
                 TextComponent.of(affectedBlocks)).color(TextColor.LIGHT_PURPLE));
-        if (affectedBiomeCols > 0) {
-            messages.add(TranslatableComponent.of(pluraliseI18n("worldedit.operation.affected.biome", affectedBiomeCols),
-                    TextComponent.of(affectedBiomeCols)).color(TextColor.LIGHT_PURPLE));
-        }
-        if (affectedEntities > 0) {
-            messages.add(TranslatableComponent.of(pluraliseI18n("worldedit.operation.affected.entity", affectedEntities),
-                    TextComponent.of(affectedEntities)).color(TextColor.LIGHT_PURPLE));
-        }
+        messages.add(TranslatableComponent.of(pluraliseI18n("worldedit.operation.affected.biome", affectedBiomeCols),
+                TextComponent.of(affectedBiomeCols)).color(TextColor.LIGHT_PURPLE));
+        messages.add(TranslatableComponent.of(pluraliseI18n("worldedit.operation.affected.entity", affectedEntities),
+                TextComponent.of(affectedEntities)).color(TextColor.LIGHT_PURPLE));
 
         return messages;
     }

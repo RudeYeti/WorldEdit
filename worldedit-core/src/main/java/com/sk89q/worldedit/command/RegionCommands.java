@@ -53,6 +53,7 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionOperationException;
 import com.sk89q.worldedit.util.TreeGenerator.TreeType;
+import com.sk89q.worldedit.util.formatting.text.Component;
 import org.enginehub.piston.annotation.Command;
 import org.enginehub.piston.annotation.CommandContainer;
 import org.enginehub.piston.annotation.param.Arg;
@@ -95,8 +96,7 @@ public class RegionCommands {
         RegionVisitor visitor = new RegionVisitor(region, set);
 
         Operations.completeBlindly(visitor);
-        List<String> messages = Lists.newArrayList();
-        visitor.addStatusMessages(messages);
+        List<Component> messages = Lists.newArrayList(visitor.getStatusMessages());
         if (messages.isEmpty()) {
             player.print("Operation completed.");
         } else {

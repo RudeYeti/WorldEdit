@@ -518,14 +518,14 @@ public final class PlatformCommandManager {
 
                 if (config.profile) {
                     long time = System.currentTimeMillis() - start;
+                    double timeS = (time / 1000.0);
                     int changed = editSession.getBlockChangeCount();
                     if (time > 0) {
-                        double throughput = changed / (time / 1000.0);
-                        actor.printDebug((time / 1000.0) + "s elapsed (history: "
-                                + changed + " changed; "
-                                + Math.round(throughput) + " blocks/sec).");
+                        double throughput = changed / timeS;
+                        actor.printDebug(TranslatableComponent.of("worldedit.command.time-elapsed.verbose",
+                                TextComponent.of(changed), TextComponent.of(Math.round(throughput))));
                     } else {
-                        actor.printDebug((time / 1000.0) + "s elapsed.");
+                        actor.printDebug(TranslatableComponent.of("worldedit.command.time-elapsed", TextComponent.of(timeS)));
                     }
                 }
 
@@ -562,7 +562,7 @@ public final class PlatformCommandManager {
 
     private void handleUnknownException(Actor actor, Throwable t) {
         actor.printError("Please report this error: [See console]");
-        actor.printRaw(t.getClass().getName() + ": " + t.getMessage());
+        actor.print(TextComponent.of(t.getClass().getName() + ": " + t.getMessage()));
         log.error("An unexpected error while handling a WorldEdit command", t);
     }
 

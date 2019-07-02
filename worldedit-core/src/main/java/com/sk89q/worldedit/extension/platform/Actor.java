@@ -54,28 +54,36 @@ public interface Actor extends Identifiable, SessionOwner, Subject {
      * Print a message.
      *
      * @param msg The message text
+     * @deprecated Use component-based functions (print)
      */
+    @Deprecated
     void printRaw(String msg);
 
     /**
      * Print a WorldEdit message.
      *
      * @param msg The message text
+     * @deprecated Use component-based functions (printDebug)
      */
+    @Deprecated
     void printDebug(String msg);
 
     /**
      * Print a WorldEdit message.
      *
      * @param msg The message text
+     * @deprecated Use component-based functions (printInfo)
      */
+    @Deprecated
     void print(String msg);
 
     /**
      * Print a WorldEdit error.
      *
      * @param msg The error message text
+     * @deprecated Use component-based functions (printError)
      */
+    @Deprecated
     void printError(String msg);
 
     /**
@@ -94,6 +102,15 @@ public interface Actor extends Identifiable, SessionOwner, Subject {
      */
     default void printInfo(Component component) {
         print(component.color(TextColor.LIGHT_PURPLE));
+    }
+
+    /**
+     * Print a WorldEdit message.
+     *
+     * @param component The component to print
+     */
+    default void printDebug(Component component) {
+        print(component.color(TextColor.GRAY));
     }
 
     /**
