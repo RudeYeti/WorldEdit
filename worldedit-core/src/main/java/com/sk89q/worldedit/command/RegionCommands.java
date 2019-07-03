@@ -19,7 +19,6 @@
 
 package com.sk89q.worldedit.command;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalSession;
@@ -53,7 +52,10 @@ import com.sk89q.worldedit.regions.CuboidRegion;
 import com.sk89q.worldedit.regions.Region;
 import com.sk89q.worldedit.regions.RegionOperationException;
 import com.sk89q.worldedit.util.TreeGenerator.TreeType;
+import com.sk89q.worldedit.util.formatting.component.TextUtils;
 import com.sk89q.worldedit.util.formatting.text.Component;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import org.enginehub.piston.annotation.Command;
 import org.enginehub.piston.annotation.CommandContainer;
 import org.enginehub.piston.annotation.param.Arg;
@@ -98,9 +100,9 @@ public class RegionCommands {
         Operations.completeBlindly(visitor);
         List<Component> messages = Lists.newArrayList(visitor.getStatusMessages());
         if (messages.isEmpty()) {
-            player.print("Operation completed.");
+            player.printInfo(TranslatableComponent.of("worldedit.set.done"));
         } else {
-            player.print("Operation completed (" + Joiner.on(", ").join(messages) + ").");
+            player.printInfo(TranslatableComponent.of("worldedit.set.done.verbose", TextUtils.join(messages, TextComponent.of(", "))));
         }
 
         return visitor.getAffected();

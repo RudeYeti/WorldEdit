@@ -53,8 +53,7 @@ sourceSets {
 }
 
 if (project.hasProperty("crowdin_apikey")) {
-    build.dependsOn(crowdinUpload)
-    build.dependsOn(crowdinDownload)
+    processResources.dependsOn(crowdinDownload)
 } else {
     ext.crowdin_apikey = ""
 }

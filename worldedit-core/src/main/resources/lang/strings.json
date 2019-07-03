@@ -89,6 +89,9 @@
     "worldedit.flip.flipped": "The clipboard copy has been flipped.",
     "worldedit.clearclipboard.cleared": "Clipboard cleared.",
 
+    "worldedit.set.done": "Operation completed.",
+    "worldedit.set.done.verbose": "Operation completed ({0}).",
+
     "worldedit.unstuck.moved": "There you go!",
     "worldedit.ascend.obstructed": "No free spot above you found.",
     "worldedit.ascend.moved.singular": "Ascended a level.",
@@ -101,7 +104,7 @@
     "worldedit.thru.obstructed": "No free spot ahead of you found.",
     "worldedit.thru.moved": "Woosh!",
     "worldedit.jumpto.moved": "Poof!",
-    "worldedit.jumpto.none": "No block in sight!",
+    "worldedit.jumpto.none": "No block in sight (or too far away)!",
     "worldedit.up.obstructed": "You would hit something above you.",
     "worldedit.up.moved": "Woosh!",
 
@@ -115,8 +118,20 @@
     "worldedit.timezone.current": "The current time in that timezone is: {0}",
     "worldedit.version.version": "WorldEdit version {0}",
 
-    "worldedit.command.time-elapsed": "{0}s elapsed.",
-    "worldedit.command.time-elapsed.verbose": "{0}s elapsed (history: {0} changed; {1} blocks/sec).",
+    "worldedit.command.time-elapsed": "{0}s elapsed (history: {1} changed; {2} blocks/sec).",
+
+    "worldedit.tool.max-block-changes": "Max blocks change limit reached.",
+    "worldedit.tool.no-block": "No block in sight!",
+    "worldedit.tool.data-cycler.block-not-permitted": "You are not permitted to cycle the data value of that block.",
+    "worldedit.tool.data-cycler.cant-cycle": "That block's data cannot be cycled!",
+    "worldedit.tool.data-cycler.new-value": "Value of {0} is now {1}.",
+    "worldedit.tool.data-cycler.cycling": "Now cycling {0}.",
+    "worldedit.tool.deltree.not-tree": "That's not a tree.",
+    "worldedit.tool.deltree.not-floating": "That's not a floating tree.",
+    "worldedit.tool.tree.obstructed": "A tree can't go there.",
+    "worldedit.tool.info.blockstate.hover": "Block state",
+    "worldedit.tool.info.internalid.hover": "Internal ID",
+    "worldedit.tool.info.light.hover": "Block Light/Light Above",
 
     "worldedit.operation.affected.biome.singular": "{0} biome affected",
     "worldedit.operation.affected.biome.plural": "{0} biomes affected",

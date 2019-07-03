@@ -520,13 +520,13 @@ public final class PlatformCommandManager {
                     long time = System.currentTimeMillis() - start;
                     double timeS = (time / 1000.0);
                     int changed = editSession.getBlockChangeCount();
-                    if (time > 0) {
-                        double throughput = changed / timeS;
-                        actor.printDebug(TranslatableComponent.of("worldedit.command.time-elapsed.verbose",
-                                TextComponent.of(changed), TextComponent.of(Math.round(throughput))));
-                    } else {
-                        actor.printDebug(TranslatableComponent.of("worldedit.command.time-elapsed", TextComponent.of(timeS)));
-                    }
+                    double throughput = timeS == 0 ? changed : changed / timeS;
+                    actor.printDebug(TranslatableComponent.of(
+                            "worldedit.command.time-elapsed",
+                            TextComponent.of(timeS),
+                            TextComponent.of(changed),
+                            TextComponent.of(Math.round(throughput))
+                    ));
                 }
 
                 worldEdit.flushBlockBag(actor, editSession);
