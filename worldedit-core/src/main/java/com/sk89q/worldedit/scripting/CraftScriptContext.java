@@ -115,7 +115,7 @@ public class CraftScriptContext extends CraftScriptEnvironment {
      * @param message a message
      */
     public void print(String message) {
-        player.print(message);
+        player.printInfo(TextComponent.of(message));
     }
 
     /**
@@ -124,11 +124,11 @@ public class CraftScriptContext extends CraftScriptEnvironment {
      * @param message a message
      */
     public void error(String message) {
-        player.printError(message);
+        player.printError(TextComponent.of(message));
     }
 
     /**
-     * Print an raw message to the user.
+     * Print a raw message to the user.
      * 
      * @param message a message
      */
