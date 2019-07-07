@@ -390,7 +390,7 @@ public class UtilityCommands {
         if (radius == null) {
             radius = config.butcherDefaultRadius;
         } else if (radius < -1) {
-            actor.printError("Use -1 to remove all mobs in loaded chunks");
+            actor.printError(TranslatableComponent.of("worldedit.butcher.explain-all"));
             return 0;
         } else if (radius == -1) {
             if (config.butcherMaxRadius != -1) {
@@ -437,7 +437,7 @@ public class UtilityCommands {
         Player player = actor instanceof Player ? (Player) actor : null;
 
         if (radius < -1) {
-            actor.printError("Use -1 to remove all entities in loaded chunks");
+            actor.printError(TranslatableComponent.of("worldedit.remove.explain-all"));
             return 0;
         }
 
@@ -503,8 +503,7 @@ public class UtilityCommands {
         try {
             expression = Expression.compile(String.join(" ", input));
         } catch (ExpressionException e) {
-            actor.printError(String.format(
-                "'%s' could not be parsed as a valid expression", input));
+            actor.printError(TranslatableComponent.of("worldedit.calc.invalid", TextComponent.of(String.join(" ", input))));
             return;
         }
         WorldEditAsyncCommandBuilder.createAndSendMessage(actor, () -> {

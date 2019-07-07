@@ -29,6 +29,8 @@ import com.sk89q.worldedit.command.util.CommandPermissionsConditionGenerator;
 import com.sk89q.worldedit.command.util.Logging;
 import com.sk89q.worldedit.entity.Player;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.util.formatting.text.TextComponent;
+import com.sk89q.worldedit.util.formatting.text.TranslatableComponent;
 import com.sk89q.worldedit.world.DataException;
 import com.sk89q.worldedit.world.snapshot.InvalidSnapshotException;
 import com.sk89q.worldedit.world.snapshot.Snapshot;
@@ -67,7 +69,7 @@ public class SnapshotUtilCommands {
         LocalConfiguration config = we.getConfiguration();
 
         if (config.snapshotRepo == null) {
-            player.printError("Snapshot/backup restore is not configured.");
+            player.printError(TranslatableComponent.of("worldedit.restore.not-configured"));
             return;
         }
 
@@ -78,7 +80,7 @@ public class SnapshotUtilCommands {
             try {
                 snapshot = config.snapshotRepo.getSnapshot(snapshotName);
             } catch (InvalidSnapshotException e) {
-                player.printError("That snapshot does not exist or is not available.");
+                player.printError(TranslatableComponent.of("worldedit.restore.not-available"));
                 return;
             }
         } else {
@@ -91,7 +93,7 @@ public class SnapshotUtilCommands {
                 snapshot = config.snapshotRepo.getDefaultSnapshot(player.getWorld().getName());
 
                 if (snapshot == null) {
-                    player.printError("No snapshots were found. See console for details.");
+                    player.printError(TranslatableComponent.of("worldedit.restore.none-found-console"));
 
                     // Okay, let's toss some debugging information!
                     File dir = config.snapshotRepo.getDirectory();
@@ -108,7 +110,7 @@ public class SnapshotUtilCommands {
                     return;
                 }
             } catch (MissingWorldException ex) {
-                player.printError("No snapshots were found for this world.");
+                player.printError(TranslatableComponent.of("worldedit.restore.none-for-world"));
                 return;
             }
         }
@@ -118,9 +120,9 @@ public class SnapshotUtilCommands {
         // Load chunk store
         try {
             chunkStore = snapshot.getChunkStore();
-            player.print("Snapshot '" + snapshot.getName() + "' loaded; now restoring...");
+            player.printInfo(TranslatableComponent.of("worldedit.restore.loaded", TextComponent.of(snapshot.getName())));
         } catch (DataException | IOException e) {
-            player.printError("Failed to load snapshot: " + e.getMessage());
+            player.printError(TranslatableComponent.of("worldedit.restore.failed", TextComponent.of(e.getMessage())));
             return;
         }
 
@@ -134,18 +136,17 @@ public class SnapshotUtilCommands {
             if (restore.hadTotalFailure()) {
                 String error = restore.getLastErrorMessage();
                 if (!restore.getMissingChunks().isEmpty()) {
-                    player.printError("Chunks were not present in snapshot.");
+                    player.printError(TranslatableComponent.of("worldedit.restore.chunk-not-present"));
                 } else if (error != null) {
-                    player.printError("Errors prevented any blocks from being restored.");
-                    player.printError("Last error: " + error);
+                    player.printError(TranslatableComponent.of("worldedit.restore.block-place-failed"));
+                    player.printError(TranslatableComponent.of("worldedit.restore.block-place-error", TextComponent.of(error)));
                 } else {
-                    player.printError("No chunks could be loaded. (Bad archive?)");
+                    player.printError(TranslatableComponent.of("worldedit.restore.chunk-load-failed"));
                 }
             } else {
-                player.print(String.format("Restored; %d "
-                        + "missing chunks and %d other errors.",
-                        restore.getMissingChunks().size(),
-                        restore.getErrorChunks().size()));
+                player.printInfo(TranslatableComponent.of("worldedit.restore.restored",
+                        TextComponent.of(restore.getMissingChunks().size()),
+                        TextComponent.of(restore.getErrorChunks().size())));
             }
         } finally {
             try {
