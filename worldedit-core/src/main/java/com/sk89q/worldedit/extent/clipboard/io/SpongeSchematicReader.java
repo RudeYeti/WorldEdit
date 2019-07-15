@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalInt;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -71,6 +72,7 @@ public class SpongeSchematicReader extends NBTSchematicReader {
     private static final Logger log = LoggerFactory.getLogger(SpongeSchematicReader.class);
     private final NBTInputStream inputStream;
     private DataFixer fixer = null;
+    private int schematicVersion = -1;
     private int dataVersion = -1;
 
     /**
@@ -85,25 +87,18 @@ public class SpongeSchematicReader extends NBTSchematicReader {
 
     @Override
     public Clipboard read() throws IOException {
-        NamedTag rootTag = inputStream.readNamedTag();
-        if (!rootTag.getName().equals("Schematic")) {
-            throw new IOException("Tag 'Schematic' does not exist or is not first");
-        }
-        CompoundTag schematicTag = (CompoundTag) rootTag.getTag();
-
-        // Check
+        CompoundTag schematicTag = getBaseTag();
         Map<String, Tag> schematic = schematicTag.getValue();
 
-        int version = requireTag(schematic, "Version", IntTag.class).getValue();
         final Platform platform = WorldEdit.getInstance().getPlatformManager()
                 .queryCapability(Capability.WORLD_EDITING);
         int liveDataVersion = platform.getDataVersion();
 
-        if (version == 1) {
+        if (schematicVersion == 1) {
             dataVersion = 1631; // this is a relatively safe assumption unless someone imports a schematic from 1.12, e.g. sponge 7.1-
             fixer = platform.getDataFixer();
             return readVersion1(schematicTag);
-        } else if (version == 2) {
+        } else if (schematicVersion == 2) {
             dataVersion = requireTag(schematic, "DataVersion", IntTag.class).getValue();
             if (dataVersion > liveDataVersion) {
                 log.warn("Schematic was made in a newer Minecraft version ({} > {}). Data may be incompatible.",
@@ -123,6 +118,36 @@ public class SpongeSchematicReader extends NBTSchematicReader {
             return readVersion2(clip, schematicTag);
         }
         throw new IOException("This schematic version is currently not supported");
+    }
+
+    @Override
+    public OptionalInt getDataVersion() {
+        try {
+            CompoundTag schematicTag = getBaseTag();
+            Map<String, Tag> schematic = schematicTag.getValue();
+            if (schematicVersion == 1) {
+                return OptionalInt.of(1631);
+            } else if (schematicVersion == 2) {
+                return OptionalInt.of(requireTag(schematic, "DataVersion", IntTag.class).getValue());
+            }
+            return OptionalInt.empty();
+        } catch (IOException e) {
+            return OptionalInt.empty();
+        }
+    }
+
+    private CompoundTag getBaseTag() throws IOException {
+        NamedTag rootTag = inputStream.readNamedTag();
+        if (!rootTag.getName().equals("Schematic")) {
+            throw new IOException("Tag 'Schematic' does not exist or is not first");
+        }
+        CompoundTag schematicTag = (CompoundTag) rootTag.getTag();
+
+        // Check
+        Map<String, Tag> schematic = schematicTag.getValue();
+
+        schematicVersion = requireTag(schematic, "Version", IntTag.class).getValue();
+        return schematicTag;
     }
 
     private BlockArrayClipboard readVersion1(CompoundTag schematicTag) throws IOException {
