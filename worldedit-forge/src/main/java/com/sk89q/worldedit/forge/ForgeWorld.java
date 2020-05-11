@@ -88,6 +88,8 @@ import javax.annotation.Nullable;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -105,7 +107,7 @@ public class ForgeWorld extends AbstractWorld {
     private static final IBlockState JUNGLE_LOG = Blocks.LOG.getDefaultState().withProperty(BlockOldLog.VARIANT, BlockPlanks.EnumType.JUNGLE);
     private static final IBlockState JUNGLE_LEAF = Blocks.LEAVES.getDefaultState().withProperty(BlockOldLeaf.VARIANT, BlockPlanks.EnumType.JUNGLE).withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
     private static final IBlockState JUNGLE_SHRUB = Blocks.LEAVES.getDefaultState().withProperty(BlockOldLeaf.VARIANT, BlockPlanks.EnumType.OAK).withProperty(BlockLeaves.CHECK_DECAY, Boolean.valueOf(false));
-    
+
     private final WeakReference<World> worldRef;
 
     /**
@@ -151,6 +153,13 @@ public class ForgeWorld extends AbstractWorld {
     @Override
     public String getName() {
         return getWorld().getWorldInfo().getWorldName();
+    }
+
+    @Override
+    public int getMinY() {
+        // Note: this method gets overwritten by cubic chunks.
+        // Existence of this method here signals that this version of WorldEdit is aware of it
+        return 0;
     }
 
     @Override
