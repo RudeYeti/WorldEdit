@@ -19,6 +19,8 @@
 
 package com.sk89q.worldedit.forge;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.common.io.Files;
 import com.sk89q.jnbt.CompoundTag;
 import com.sk89q.worldedit.BlockVector;
@@ -42,7 +44,6 @@ import com.sk89q.worldedit.util.TreeGenerator.TreeType;
 import com.sk89q.worldedit.world.AbstractWorld;
 import com.sk89q.worldedit.world.biome.BaseBiome;
 import com.sk89q.worldedit.world.registry.WorldData;
-
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockOldLeaf;
@@ -84,8 +85,6 @@ import net.minecraft.world.gen.feature.WorldGenTrees;
 import net.minecraft.world.gen.feature.WorldGenerator;
 import net.minecraftforge.common.DimensionManager;
 
-import javax.annotation.Nullable;
-
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
@@ -94,7 +93,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import javax.annotation.Nullable;
 
 /**
  * An adapter to Minecraft worlds for WorldEdit.
@@ -294,13 +293,40 @@ public class ForgeWorld extends AbstractWorld {
         World freshWorld = new WorldServer(server, saveHandler, originalWorld.getWorldInfo(),
                 originalWorld.provider.getDimension(), originalWorld.profiler).init();
 
-        // Pre-gen all the chunks
-        // We need to also pull one more chunk in every direction
-        CuboidRegion expandedPreGen = new CuboidRegion(region.getMinimumPoint().subtract(16, 0, 16), region.getMaximumPoint().add(16, 0, 16));
-        for (Vector2D chunk : expandedPreGen.getChunks()) {
-            freshWorld.getChunk(chunk.getBlockX(), chunk.getBlockZ());
+        boolean isCubic = false;
+        try {
+            Method isCubicWorld = World.class.getMethod("isCubicWorld");
+            isCubic = (boolean) isCubicWorld.invoke(getWorldChecked());
+        } catch (NoSuchMethodException | WorldEditException | IllegalAccessException | InvocationTargetException e) {
         }
-        
+
+        if (isCubic) {
+            // Pre-gen all the cubes
+            // no need to expand, CC API handles it
+            try {
+                ChunkProviderServer cubeProviderServer = (ChunkProviderServer) freshWorld.getChunkProvider();
+
+                @SuppressWarnings("unchecked")
+                final Class<Enum<?>> requirement =
+                        (Class<Enum<?>>) Class.forName("io.github.opencubicchunks.cubicchunks.api.world.ICubeProviderServer$Requirement");
+                final Method getCube = cubeProviderServer.getClass().getMethod("getCube", int.class, int.class, int.class, requirement);;
+                final Enum<?>[] requirements = (Enum<?>[]) requirement.getMethod("values").invoke(null);
+                final Enum<?> finalRequirement = requirements[requirements.length - 1];
+                for (Vector chunk : region.getChunkCubes()) {
+                    getCube.invoke(cubeProviderServer, chunk.getBlockX(), chunk.getBlockY(), chunk.getBlockZ(), finalRequirement);
+                }
+            } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                throw new Error(e);
+            }
+        } else {
+            // Pre-gen all the chunks
+            // We need to also pull one more chunk in every direction
+            CuboidRegion expandedPreGen = new CuboidRegion(region.getMinimumPoint().subtract(16, 0, 16), region.getMaximumPoint().add(16, 0, 16));
+            for (Vector2D chunk : expandedPreGen.getChunks()) {
+                freshWorld.getChunk(chunk.getBlockX(), chunk.getBlockZ());
+            }
+        }
+
         ForgeWorld from = new ForgeWorld(freshWorld);
         try {
             for (BlockVector vec : region) {
