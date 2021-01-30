@@ -28,6 +28,7 @@ import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.Vector2D;
+import com.sk89q.worldedit.WorldEdit;
 import com.sk89q.worldedit.WorldEditException;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BaseItem;
@@ -309,7 +310,7 @@ public class ForgeWorld extends AbstractWorld {
                 @SuppressWarnings("unchecked")
                 final Class<Enum<?>> requirement =
                         (Class<Enum<?>>) Class.forName("io.github.opencubicchunks.cubicchunks.api.world.ICubeProviderServer$Requirement");
-                final Method getCube = cubeProviderServer.getClass().getMethod("getCube", int.class, int.class, int.class, requirement);;
+                final Method getCube = getGetCubeMethod(cubeProviderServer, requirement);
                 final Enum<?>[] requirements = (Enum<?>[]) requirement.getMethod("values").invoke(null);
                 final Enum<?> finalRequirement = requirements[requirements.length - 1];
                 for (Vector chunk : region.getChunkCubes()) {
@@ -341,6 +342,15 @@ public class ForgeWorld extends AbstractWorld {
         }
 
         return true;
+    }
+
+    private static Method getGetCubeMethod(Object cubeProviderServer, Class<?> requirement) throws NoSuchMethodException {
+        try {
+            return cubeProviderServer.getClass().getMethod("getCubeNow", int.class, int.class, int.class, requirement);
+        } catch (NoSuchMethodException e) {
+            WorldEdit.logger.warning("CubeProviderServer.getCubeNow method doesn't exist, using getCube. Are you using older cubic chunks version?");
+            return cubeProviderServer.getClass().getMethod("getCube", int.class, int.class, int.class, requirement);
+        }
     }
 
     @Nullable
