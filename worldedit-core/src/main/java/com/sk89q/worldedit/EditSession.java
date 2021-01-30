@@ -1150,6 +1150,7 @@ public class EditSession implements Extent {
 
     /**
      * Stack a cuboid region.
+     * Use {@link #stackCuboidRegion(Region, Vector, int, Mask)} to fine tune.
      *
      * @param region the region to stack
      * @param dir the direction to stack
@@ -1159,6 +1160,20 @@ public class EditSession implements Extent {
      * @throws MaxChangedBlocksException thrown if too many blocks are changed
      */
     public int stackCuboidRegion(Region region, Vector dir, int count, boolean copyAir) throws MaxChangedBlocksException {
+        return stackCuboidRegion(region, dir, count, copyAir ? null : new ExistingBlockMask(this));
+    }
+
+    /**
+     * Stack a cuboid region.
+     *
+     * @param region the region to stack
+     * @param dir the direction to stack
+     * @param count the number of times to stack
+     * @param mask source mask for the operation (only matching blocks are copied)
+     * @return number of blocks affected
+     * @throws MaxChangedBlocksException thrown if too many blocks are changed
+     */
+    public int stackCuboidRegion(Region region, Vector dir, int count, Mask mask) throws MaxChangedBlocksException {
         checkNotNull(region);
         checkNotNull(dir);
         checkArgument(count >= 1, "count >= 1 required");
@@ -1168,8 +1183,8 @@ public class EditSession implements Extent {
         ForwardExtentCopy copy = new ForwardExtentCopy(this, region, this, to);
         copy.setRepetitions(count);
         copy.setTransform(new AffineTransform().translate(dir.multiply(size)));
-        if (!copyAir) {
-            copy.setSourceMask(new ExistingBlockMask(this));
+        if (mask != null) {
+            copy.setSourceMask(mask);
         }
         Operations.completeLegacy(copy);
         return copy.getAffected();

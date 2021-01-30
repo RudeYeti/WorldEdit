@@ -30,6 +30,7 @@ import com.sk89q.worldedit.function.generator.FloraGenerator;
 import com.sk89q.worldedit.function.generator.ForestGenerator;
 import com.sk89q.worldedit.function.mask.ExistingBlockMask;
 import com.sk89q.worldedit.function.mask.Mask;
+import com.sk89q.worldedit.function.mask.MaskIntersection;
 import com.sk89q.worldedit.function.mask.NoiseFilter2D;
 import com.sk89q.worldedit.function.operation.Operations;
 import com.sk89q.worldedit.function.pattern.Pattern;
@@ -292,7 +293,7 @@ public class RegionCommands {
 
     @Command(
         aliases = { "/stack" },
-        usage = "[count] [direction]",
+        usage = "[count] [direction] [mask]",
         flags = "sa",
         desc = "Repeat the contents of the selection",
         help =
@@ -301,7 +302,7 @@ public class RegionCommands {
             "  -s shifts the selection to the last stacked copy\n" +
             "  -a skips air blocks",
         min = 0,
-        max = 2
+        max = 3
     )
     @CommandPermissions("worldedit.region.stack")
     @Logging(ORIENTATION_REGION)
@@ -309,9 +310,21 @@ public class RegionCommands {
                       @Selection Region region,
                       @Optional("1") @Range(min = 1) int count,
                       @Optional(Direction.AIM) @Direction Vector direction,
+                      @Optional Mask mask,
                       @Switch('s') boolean moveSelection,
                       @Switch('a') boolean ignoreAirBlocks) throws WorldEditException {
-        int affected = editSession.stackCuboidRegion(region, direction, count, !ignoreAirBlocks);
+        Mask combinedMask;
+        if (ignoreAirBlocks) {
+            if (mask == null) {
+                combinedMask = new ExistingBlockMask(editSession);
+            } else {
+                combinedMask = new MaskIntersection(mask, new ExistingBlockMask(editSession));
+            }
+        } else {
+            combinedMask = mask;
+        }
+
+        int affected = editSession.stackCuboidRegion(region, direction, count, combinedMask);
 
         if (moveSelection) {
             try {
