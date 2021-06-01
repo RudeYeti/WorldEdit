@@ -33,7 +33,7 @@ jar {
 shadowJar {
     dependencies {
         include(dependency(':worldedit-core'))
-        include(dependency('com.google.code.gson:gson:2.2.4'))
+        include(dependency('com.google.code.gson:gson:2.8.0'))
     }
 
     relocate('com.google.gson', 'com.sk89q.worldedit.internal.gson')

@@ -19,13 +19,8 @@
 
 package com.sk89q.worldedit.bukkit;
 
-import com.sk89q.worldedit.BlockVector2D;
-import com.sk89q.worldedit.EditSession;
-import com.sk89q.worldedit.LocalWorld;
 import com.sk89q.worldedit.Vector;
-import com.sk89q.worldedit.Vector2D;
-import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.*;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.blocks.BaseItemStack;
 import com.sk89q.worldedit.blocks.LazyBlock;
@@ -49,20 +44,57 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Level;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.nio.file.Files;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+class ForgeWorld {
+    private final WeakReference<Object> worldRef;
+
+    /**
+     * Construct the object.
+     *
+     * @param world the world
+     */
+    public ForgeWorld(Object world) {
+        this.worldRef = new WeakReference<Object>(world);
+    }
+
+    public BaseBlock getBlock(Vector position) {
+        try {
+            Object world = worldRef.get();
+
+            Constructor<?> blockPos = Class.forName("net.minecraft.util.math.BlockPos").getConstructor(int.class, int.class, int.class);
+            Object pos = blockPos.newInstance(position.getBlockX(), position.getBlockY(), position.getBlockZ());
+            Object state = world.getClass().getMethod("func_180495_p", blockPos.getDeclaringClass()).invoke(world, pos);
+            Class<?> block = Class.forName("net.minecraft.block.Block");
+            Object getBlock = state.getClass().getMethod("func_177230_c").invoke(state);
+            Object getIdFromBlock = getBlock.getClass().getMethod("func_149682_b", block).invoke(block, getBlock);
+            Class<?> iBlockState = Class.forName("net.minecraft.block.state.IBlockState");
+            Object getMetaFromState = getBlock.getClass().getMethod("func_176201_c", iBlockState).invoke(getBlock, state);
+
+            return new BaseBlock((int) getIdFromBlock, (int) getMetaFromState);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+}
+
 public class BukkitWorld extends LocalWorld {
 
     private static final Logger logger = WorldEdit.logger;
+
+    private int worldMinHeight = 0;
+    private boolean cachedWorldMinHeight = false;
+    private Object craftWorld = null;
 
     private static final Map<Integer, Effect> effects = new HashMap<Integer, Effect>();
     static {
@@ -144,6 +176,20 @@ public class BukkitWorld extends LocalWorld {
         return world;
     }
 
+    public Object getCraftWorld() {
+        if (craftWorld == null) {
+            try {
+                World bukkitWorld = getWorld();
+                Field worldField = bukkitWorld.getClass().getDeclaredField("world");
+                worldField.setAccessible(true);
+                craftWorld = worldField.get(bukkitWorld);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return craftWorld;
+    }
+
     @Override
     public String getName() {
         return getWorld().getName();
@@ -156,48 +202,84 @@ public class BukkitWorld extends LocalWorld {
 
     @Override
     public boolean regenerate(Region region, EditSession editSession) {
-        BaseBlock[] history = new BaseBlock[16 * 16 * (getMaxY() + 1)];
+        boolean isCubic = false;
 
-        for (Vector2D chunk : region.getChunks()) {
-            Vector min = new Vector(chunk.getBlockX() * 16, 0, chunk.getBlockZ() * 16);
+        try {
+            Method isCubicWorld = getCraftWorld().getClass().getMethod("isCubicWorld");
+            isCubic = (boolean) isCubicWorld.invoke(getCraftWorld());
+        } catch (Exception ignored) {}
 
-            // First save all the blocks inside
-            for (int x = 0; x < 16; ++x) {
-                for (int y = 0; y < (getMaxY() + 1); ++y) {
-                    for (int z = 0; z < 16; ++z) {
-                        Vector pt = min.add(x, y, z);
-                        int index = y * 16 * 16 + z * 16 + x;
-                        history[index] = editSession.getBlock(pt);
-                    }
-                }
-            }
-
+        if (isCubic) {
             try {
-                getWorld().regenerateChunk(chunk.getBlockX(), chunk.getBlockZ());
-            } catch (Throwable t) {
-                logger.log(Level.WARNING, "Chunk generation via Bukkit raised an error", t);
-            }
+                Object originalWorld = getWorld().getClass().getMethod("getHandle").invoke(getWorld());
+                Object server = originalWorld.getClass().getMethod("func_73046_m").invoke(originalWorld);
 
-            // Then restore
-            for (int x = 0; x < 16; ++x) {
-                for (int y = 0; y < (getMaxY() + 1); ++y) {
-                    for (int z = 0; z < 16; ++z) {
-                        Vector pt = min.add(x, y, z);
-                        int index = y * 16 * 16 + z * 16 + x;
+                File saveFolder = Files.createTempDirectory("WorldEditRegen").toFile();
+                saveFolder.deleteOnExit();
 
-                        // We have to restore the block if it was outside
-                        if (!region.contains(pt)) {
-                            editSession.smartSetBlock(pt, history[index]);
-                        } else { // Otherwise fool with history
-                            editSession.rememberChange(pt, history[index],
-                                    editSession.rawGetBlock(pt));
-                        }
-                    }
+                Class<?> dataFixer = Class.forName("net.minecraft.util.datafix.DataFixer");
+                Object getDataFixer = server.getClass().getMethod("getDataFixer").invoke(server);
+                Constructor<?> anvilSaveHandler = Class.forName("net.minecraft.world.chunk.storage.AnvilSaveHandler")
+                        .getConstructor(File.class, String.class, boolean.class, dataFixer);
+                Class<?> iSaveHandler = Class.forName("net.minecraft.world.storage.ISaveHandler");
+                Object saveHandler = anvilSaveHandler.newInstance(saveFolder,
+                        getWorld().getWorldFolder().getName(), true, getDataFixer);
+                Class<?> worldInfo = Class.forName("net.minecraft.world.storage.WorldInfo");
+                Object getWorldInfo = originalWorld.getClass().getMethod("func_72912_H").invoke(originalWorld);
+                Field dimension = getWorldInfo.getClass().getDeclaredField("field_76105_j");
+                dimension.setAccessible(true);
+                int getDimension = (int) dimension.get(getWorldInfo);
+                Class<?> profiler = Class.forName("net.minecraft.profiler.Profiler");
+                Object getProfiler = originalWorld.getClass().getSuperclass().getDeclaredField("field_72984_F").get(originalWorld);
+                Class<?> minecraftServer = Class.forName("net.minecraft.server.MinecraftServer");
+                Constructor<?> worldServerConstructor = Class.forName("net.minecraft.world.WorldServer")
+                        .getConstructor(minecraftServer, iSaveHandler, worldInfo, int.class, profiler);
+                Object newWorldServer = worldServerConstructor.newInstance(server, saveHandler, getWorldInfo, getDimension, getProfiler);
+                Object freshWorld = newWorldServer.getClass().getMethod("func_175643_b").invoke(newWorldServer);
+                Object cubeProviderServer = freshWorld.getClass().getMethod("func_72863_F").invoke(freshWorld);
+
+                @SuppressWarnings("unchecked")
+                Class<Enum<?>> requirement = (Class<Enum<?>>) Class.forName("io.github.opencubicchunks.cubicchunks.api.world.ICubeProviderServer$Requirement");
+                Method getCube = getGetCubeMethod(cubeProviderServer, requirement);
+                Enum<?>[] requirements = (Enum<?>[]) requirement.getMethod("values").invoke(null);
+                Enum<?> finalRequirement = requirements[requirements.length - 1];
+
+                for (Vector chunk : region.getChunkCubes()) {
+                    getCube.invoke(cubeProviderServer, chunk.getBlockX(), chunk.getBlockY(), chunk.getBlockZ(), finalRequirement);
                 }
+
+                ForgeWorld from = new ForgeWorld(freshWorld);
+
+                for (BlockVector vec : region) {
+                    BaseBlock block = from.getBlock(vec);
+                    editSession.rememberChange(vec, editSession.rawGetBlock(vec), block);
+                    editSession.smartSetBlock(vec, block);
+                }
+
+                saveFolder.delete();
+
+                Class<?> worldServer = Class.forName("net.minecraft.world.WorldServer");
+                Class<?> dimensionManager = Class.forName("net.minecraftforge.common.DimensionManager");
+                Method setWorld = dimensionManager.getMethod("setWorld",
+                        int.class, worldServer, minecraftServer);
+
+                setWorld.invoke(dimensionManager, getDimension, null, server);
+                setWorld.invoke(dimensionManager, getDimension, originalWorld, server);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
 
         return true;
+    }
+
+    private static Method getGetCubeMethod(Object cubeProviderServer, Class<?> requirement) throws NoSuchMethodException {
+        try {
+            return cubeProviderServer.getClass().getMethod("getCubeNow", int.class, int.class, int.class, requirement);
+        } catch (NoSuchMethodException e) {
+            WorldEdit.logger.warning("CubeProviderServer#getCubeNow method doesn't exist, using getCube. Are you using an older cubic chunks version?");
+            return cubeProviderServer.getClass().getMethod("getCube", int.class, int.class, int.class, requirement);
+        }
     }
 
     /**
@@ -364,6 +446,18 @@ public class BukkitWorld extends LocalWorld {
     @Override
     public int getMaxY() {
         return getWorld().getMaxHeight() - 1;
+    }
+
+    @Override
+    public int getMinY() {
+        if (!cachedWorldMinHeight) {
+            try {
+                Method getMinHeight = getCraftWorld().getClass().getMethod("getMinHeight");
+                worldMinHeight = (int) getMinHeight.invoke(getCraftWorld());
+            } catch(Exception ignored) {}
+            cachedWorldMinHeight = true;
+        }
+        return this.worldMinHeight;
     }
 
     @Override
