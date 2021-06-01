@@ -210,13 +210,12 @@ public class BukkitWorld extends LocalWorld {
         } catch (Exception ignored) {}
 
         if (isCubic) {
+            File saveFolder = null;
             try {
                 Object originalWorld = getWorld().getClass().getMethod("getHandle").invoke(getWorld());
                 Object server = originalWorld.getClass().getMethod("func_73046_m").invoke(originalWorld);
 
-                File saveFolder = Files.createTempDirectory("WorldEditRegen").toFile();
-                saveFolder.deleteOnExit();
-
+                saveFolder = Files.createTempDirectory("WorldEditRegen").toFile();
                 Class<?> dataFixer = Class.forName("net.minecraft.util.datafix.DataFixer");
                 Object getDataFixer = server.getClass().getMethod("getDataFixer").invoke(server);
                 Constructor<?> anvilSaveHandler = Class.forName("net.minecraft.world.chunk.storage.AnvilSaveHandler")
@@ -256,8 +255,6 @@ public class BukkitWorld extends LocalWorld {
                     editSession.smartSetBlock(vec, block);
                 }
 
-                saveFolder.delete();
-
                 Class<?> worldServer = Class.forName("net.minecraft.world.WorldServer");
                 Class<?> dimensionManager = Class.forName("net.minecraftforge.common.DimensionManager");
                 Method setWorld = dimensionManager.getMethod("setWorld",
@@ -267,10 +264,24 @@ public class BukkitWorld extends LocalWorld {
                 setWorld.invoke(dimensionManager, getDimension, originalWorld, server);
             } catch (Exception e) {
                 e.printStackTrace();
+            } finally {
+                if (saveFolder != null) {
+                    deleteDirectory(saveFolder);
+                }
             }
         }
 
         return true;
+    }
+
+    private void deleteDirectory(File directory) {
+        File[] contents = directory.listFiles();
+        if (contents != null) {
+            for (File file : contents) {
+                deleteDirectory(file);
+            }
+        }
+        directory.delete();
     }
 
     private static Method getGetCubeMethod(Object cubeProviderServer, Class<?> requirement) throws NoSuchMethodException {
