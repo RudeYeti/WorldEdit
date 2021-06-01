@@ -51,6 +51,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -243,6 +244,47 @@ public class BukkitWorld extends LocalWorld {
                     deleteDirectory(saveFolder);
                 }
             }
+        } else {
+            BaseBlock[] history = new BaseBlock[16 * 16 * (getMaxY() + 1)];
+
+            for (Vector2D chunk : region.getChunks()) {
+                Vector min = new Vector(chunk.getBlockX() * 16, 0, chunk.getBlockZ() * 16);
+
+                // First save all the blocks inside
+                for (int x = 0; x < 16; ++x) {
+                    for (int y = 0; y < (getMaxY() + 1); ++y) {
+                        for (int z = 0; z < 16; ++z) {
+                            Vector pt = min.add(x, y, z);
+                            int index = y * 16 * 16 + z * 16 + x;
+                            history[index] = editSession.getBlock(pt);
+                        }
+                    }
+                }
+
+                try {
+                    getWorld().regenerateChunk(chunk.getBlockX(), chunk.getBlockZ());
+                } catch (Throwable t) {
+                    logger.log(Level.WARNING, "Chunk generation via Bukkit raised an error", t);
+                }
+
+                // Then restore
+                for (int x = 0; x < 16; ++x) {
+                    for (int y = 0; y < (getMaxY() + 1); ++y) {
+                        for (int z = 0; z < 16; ++z) {
+                            Vector pt = min.add(x, y, z);
+                            int index = y * 16 * 16 + z * 16 + x;
+
+                            // We have to restore the block if it was outside
+                            if (!region.contains(pt)) {
+                                editSession.smartSetBlock(pt, history[index]);
+                            } else { // Otherwise fool with history
+                                editSession.rememberChange(pt, history[index],
+                                        editSession.rawGetBlock(pt));
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         return true;
@@ -262,7 +304,7 @@ public class BukkitWorld extends LocalWorld {
         try {
             return cubeProviderServer.getClass().getMethod("getCubeNow", int.class, int.class, int.class, requirement);
         } catch (NoSuchMethodException e) {
-            WorldEdit.logger.warning("CubeProviderServer#getCubeNow method doesn't exist, using getCube. Are you using an older cubic chunks version?");
+            logger.warning("CubeProviderServer#getCubeNow method doesn't exist, using getCube. Are you using an older cubic chunks version?");
             return cubeProviderServer.getClass().getMethod("getCube", int.class, int.class, int.class, requirement);
         }
     }
@@ -370,7 +412,7 @@ public class BukkitWorld extends LocalWorld {
         treeTypeMapping.put(TreeGenerator.TreeType.RANDOM_MUSHROOM, TreeType.BROWN_MUSHROOM);
         for (TreeGenerator.TreeType type : TreeGenerator.TreeType.values()) {
             if (treeTypeMapping.get(type) == null) {
-                WorldEdit.logger.severe("No TreeType mapping for TreeGenerator.TreeType." + type);
+                logger.severe("No TreeType mapping for TreeGenerator.TreeType." + type);
             }
         }
     }
