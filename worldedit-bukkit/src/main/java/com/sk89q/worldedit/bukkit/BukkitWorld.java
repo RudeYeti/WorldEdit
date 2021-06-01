@@ -55,39 +55,6 @@ import java.util.logging.Logger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-class ForgeWorld {
-    private final WeakReference<Object> worldRef;
-
-    /**
-     * Construct the object.
-     *
-     * @param world the world
-     */
-    public ForgeWorld(Object world) {
-        this.worldRef = new WeakReference<Object>(world);
-    }
-
-    public BaseBlock getBlock(Vector position) {
-        try {
-            Object world = worldRef.get();
-
-            Constructor<?> blockPos = Class.forName("net.minecraft.util.math.BlockPos").getConstructor(int.class, int.class, int.class);
-            Object pos = blockPos.newInstance(position.getBlockX(), position.getBlockY(), position.getBlockZ());
-            Object state = world.getClass().getMethod("func_180495_p", blockPos.getDeclaringClass()).invoke(world, pos);
-            Class<?> block = Class.forName("net.minecraft.block.Block");
-            Object getBlock = state.getClass().getMethod("func_177230_c").invoke(state);
-            Object getIdFromBlock = getBlock.getClass().getMethod("func_149682_b", block).invoke(block, getBlock);
-            Class<?> iBlockState = Class.forName("net.minecraft.block.state.IBlockState");
-            Object getMetaFromState = getBlock.getClass().getMethod("func_176201_c", iBlockState).invoke(getBlock, state);
-
-            return new BaseBlock((int) getIdFromBlock, (int) getMetaFromState);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-}
-
 public class BukkitWorld extends LocalWorld {
 
     private static final Logger logger = WorldEdit.logger;
@@ -247,12 +214,19 @@ public class BukkitWorld extends LocalWorld {
                     getCube.invoke(cubeProviderServer, chunk.getBlockX(), chunk.getBlockY(), chunk.getBlockZ(), finalRequirement);
                 }
 
-                ForgeWorld from = new ForgeWorld(freshWorld);
+                for (BlockVector vector : region) {
+                    Constructor<?> blockPos = Class.forName("net.minecraft.util.math.BlockPos").getConstructor(int.class, int.class, int.class);
+                    Object pos = blockPos.newInstance(vector.getBlockX(), vector.getBlockY(), vector.getBlockZ());
+                    Object state = freshWorld.getClass().getMethod("func_180495_p", blockPos.getDeclaringClass()).invoke(freshWorld, pos);
+                    Class<?> block = Class.forName("net.minecraft.block.Block");
+                    Object getBlock = state.getClass().getMethod("func_177230_c").invoke(state);
+                    int getIdFromBlock = (int) getBlock.getClass().getMethod("func_149682_b", block).invoke(block, getBlock);
+                    Class<?> iBlockState = Class.forName("net.minecraft.block.state.IBlockState");
+                    int getMetaFromState = (int) getBlock.getClass().getMethod("func_176201_c", iBlockState).invoke(getBlock, state);
 
-                for (BlockVector vec : region) {
-                    BaseBlock block = from.getBlock(vec);
-                    editSession.rememberChange(vec, editSession.rawGetBlock(vec), block);
-                    editSession.smartSetBlock(vec, block);
+                    BaseBlock baseBlock = new BaseBlock(getIdFromBlock, getMetaFromState);
+                    editSession.rememberChange(vector, editSession.rawGetBlock(vector), baseBlock);
+                    editSession.smartSetBlock(vector, baseBlock);
                 }
 
                 Class<?> worldServer = Class.forName("net.minecraft.world.WorldServer");
